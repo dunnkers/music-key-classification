@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Editor files and folders
+.idea
+.vscode
+
+# Other stuff to ignore
+bearer-token
+spotify_million_playlist_dataset
+track_analyses
+dataset
