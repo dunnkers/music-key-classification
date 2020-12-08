@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from os import makedirs
 from os.path import exists, isdir, join
 from shutil import rmtree
-from pickle import load, dump
+from pickle import dump
 
 from meta import Meta
 from mpl import list_track_ids

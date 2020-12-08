@@ -6,7 +6,6 @@ from authorize import get_token
 from time import sleep, time
 from dateutil.parser import parse
 
-track_analyses_folder = 'track_analyses'
 track_analysis_endpoint = 'https://api.spotify.com/v1/audio-analysis'
 
 
@@ -27,36 +26,6 @@ def process_retry(retry_after):
 
 def _get_track_analysis_url(track_id):
     return f'{track_analysis_endpoint}/{track_id}'
-
-
-def _get_track_path(track_id):
-    return join(getcwd(), track_analyses_folder, track_id)
-
-
-def _track_analysis_exists(track_id):
-    return exists(_get_track_path(track_id))
-
-
-def _store_track_analysis(track_analysis, track_id):
-    print(f'storing track analysis for {track_id}')
-    print(track_analysis)
-    with open(_get_track_path(track_id), 'wb') as f:
-        dump(track_analysis, f)
-
-
-def _load_track_analysis(track_id):
-    print(f'loading track analysis for {track_id}')
-    with open(_get_track_path(track_id), 'rb') as f:
-        return load(f)
-
-
-def fetch_track_analysis(track_id):
-    token = get_token()
-    headers = {'Authorization': f"{token['token_type']} {token['access_token']}"}
-    response = get(_get_track_analysis_url(track_id), headers=headers)
-    result = response.json()
-    result['track']['id'] = track_id
-    return result
 
 
 def n_track_analyses_generator(track_ids):
@@ -85,15 +54,3 @@ def n_track_analyses_generator(track_ids):
             raise Exception("Unexpected non-200 status code")
     total_time = time() - start_time
     print(f'fetched {len(track_ids)} track analysis objects in {total_time:.3f} seconds')
-
-
-def get_track_analysis(track_id):
-    if not _track_analysis_exists(track_id):
-        track_analysis = fetch_track_analysis(track_id)
-        _store_track_analysis(track_analysis, track_id)
-        return track_analysis
-    return _load_track_analysis(track_id)
-
-
-if not exists(join(getcwd(), track_analyses_folder)):
-    makedirs(join(getcwd(), track_analyses_folder))

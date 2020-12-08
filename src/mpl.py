@@ -1,5 +1,5 @@
 from os.path import join
-from os import getcwd, listdir
+from os import listdir
 from json import load
 
 
