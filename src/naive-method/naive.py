@@ -55,7 +55,6 @@ def getToken():
         return token, expires_in
     else:
         raise Exception('Token retrieval failed.')
-    return None, None
 
 # Retrieves the audio-analysis object for a given song ID.
 # Contains some very basic exception handling, simply returns None on failure.
@@ -77,7 +76,7 @@ def getAudioAnalysis(song_id, token):
 # Data is first reformatted to a Numpy array, then processed.
 # This method compares the weighted (in this case, by duration) average chroma key
 # for every segment with each scale's notes.
-def estimate_key(audio_analysis):
+def estimate_key(analysis):
 
     # Reformat data
     num_segments = len(analysis["segments"])
