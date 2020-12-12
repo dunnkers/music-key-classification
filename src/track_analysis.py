@@ -1,10 +1,9 @@
-from os.path import exists, join
-from os import getcwd, makedirs
-from pickle import load, dump
-from requests import get
-from authorize import get_token
 from time import sleep, time
+
 from dateutil.parser import parse
+from requests import get
+
+from authorize import get_token
 
 track_analysis_endpoint = 'https://api.spotify.com/v1/audio-analysis'
 
