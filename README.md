@@ -29,3 +29,14 @@ Run `python src/data.py resume` to resume fetching the objects from the spotify 
 Run `python src/data.py check` to check if the data in OUTPUT_DIR is complete and valid.
 
 Run `python src/data.py <command> --help` to get more information on a command and its options.
+
+## Running the "naive" method on the dataset
+
+To analyse the downloaded audio analysis using a naive method, use the `src/naive.py` script:
+
+```
+python src/naive.py --data-dir dataset --csv output.csv
+```
+
+Make sure the `data-dir` matches the `output-dir` from the fetching step.
+

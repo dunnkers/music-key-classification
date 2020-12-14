@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from os import makedirs
 from os.path import exists, isdir, join
 from shutil import rmtree
-from pickle import dump
+from pickle import dump, load
 
 from meta import Meta
 from mpl import list_track_ids
@@ -21,6 +21,10 @@ def get_track_path(output_dir, track_id):
 def store_extracted_analysis(output_dir, extracted_track_analysis):
     with open(get_track_path(output_dir, extracted_track_analysis['id']), 'wb+') as f:
         dump(extracted_track_analysis, f)
+
+def load_analysis(output_dir, track_id):
+    with open(get_track_path(output_dir, track_id), 'rb') as f:
+        return load(f)
 
 
 def create_meta(track_ids):
