@@ -65,9 +65,11 @@ def run_naive_method_all_tracks(data_dir):
     n_10perc   = int(len(all_tracks)/10)
     for track_id in meta.get_track_ids():
         analysis        = load_analysis(data_dir, track_id)
-        correct_answer  = analysis["key"]
-        estimate        = estimate_key(analysis)
-        conf_mat[estimate, correct_answer] += 1
+
+        if analysis["mode"] == 1:
+            correct_answer  = analysis["key"]
+            estimate        = estimate_key(analysis)
+            conf_mat[estimate, correct_answer] += 1
         
         i += 1
         if i % n_10perc == 0:
@@ -91,6 +93,7 @@ if __name__ == '__main__':
     args = get_args()
     conf_mat = run_naive_method_all_tracks(args.data_dir)
     print(conf_mat)
+    print(f"N=%d" % (np.sum(conf_mat)))
     print(f"Overall accuracy: %.2f%%" % (100*compute_accuracy(conf_mat)))
     if args.csv is not False:
         np.savetxt(args.csv, conf_mat, delimiter=",", fmt="%d")
