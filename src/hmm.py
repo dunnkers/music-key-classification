@@ -52,12 +52,14 @@ def run_hmm_method_all_tracks(data_dir, test_split=0.2):
     minor_sequence_lengths = np.array(minor_sequence_lengths)
     major_sequence_lengths = np.array(major_sequence_lengths)
     
-    model_minor = hmm.GaussianHMM(n_components=3, covariance_type="full", n_iter=100)
-    model_major = hmm.GaussianHMM(n_components=3, covariance_type="full", n_iter=100)
+    model_minor = hmm.GaussianHMM(n_components=args.hidden_states, covariance_type="full", n_iter=args.iterations)
+    model_major = hmm.GaussianHMM(n_components=args.hidden_states, covariance_type="full", n_iter=args.iterations)
     print("Training minor model...")
     model_minor.fit(minor_sequences, minor_sequence_lengths)
+    print("Trained minor model. Converged: %s" % str(model_minor.monitor_.converged))
     print("Training major model...")
     model_major.fit(major_sequences, major_sequence_lengths)
+    print("Trained major model. Converged: %s" % str(model_major.monitor_.converged))
     print("Done.")
 
     print("Copying models")
@@ -77,6 +79,9 @@ def run_hmm_method_all_tracks(data_dir, test_split=0.2):
     print("")
 
     results = []
+    test_n = 0
+    errors = 0
+    errors_given = 0
     for track_id in all_tracks[train_n:]:
         analysis = load_analysis(data_dir, track_id)
         seq = format_sequence(analysis)
@@ -90,7 +95,15 @@ def run_hmm_method_all_tracks(data_dir, test_split=0.2):
             "%s %s"% (key_nums[top_model % 12], modes[top_model // 12]), 
             "%s %s"% (key_nums[top_model_given], modes[analysis["mode"]])
         ])
-    print(tabulate(results, headers=["Song ID", "Key label", "Predicted", "Predicted if mode is given"]))
+
+        # Count errors
+        test_n += 1
+        if not (analysis["key"] == top_model % 12 and analysis["mode"] == top_model // 12):
+            errors += 1
+        if not (analysis["key"] == top_model_given):
+            errors_given += 1
+    #print(tabulate(results, headers=["Song ID", "Key label", "Predicted", "Predicted if mode is given"]))
+    return errors/test_n, errors_given/test_n
 
         
 
@@ -103,10 +116,18 @@ def get_args():
     arg_parser.add_argument('--model-file', default=False, type=str, help='''
         Optional filename of a CSV file to store the resulting HMM model.
         ''')
+    arg_parser.add_argument('--hidden-states', default=3, type=int, help='''
+        Set the number of hidden states for the HMM.
+        ''')
+    arg_parser.add_argument('--iterations', default=100, type=int, help='''
+        Set the number of iterations for training the HMM.
+        ''')
     return arg_parser.parse_args()
 
 
 if __name__ == '__main__':
     args = get_args()
-    run_hmm_method_all_tracks(args.data_dir)
+    error, error_given = run_hmm_method_all_tracks(args.data_dir)
+    print("%26s %7.2f%%" % ("Error:", error*100) )
+    print("%26s %7.2f%%" % ("Error [mode given]:", error_given*100) )
     
