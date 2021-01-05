@@ -6,6 +6,7 @@ from hmmlearn import hmm
 from tabulate import tabulate
 
 key_nums = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+modes = ["Minor", "Major"]
 
 def format_sequence(audio_analysis):
     num_segments = len(audio_analysis["segments"])
@@ -23,6 +24,7 @@ def run_hmm_method_all_tracks(data_dir, test_split=0.2):
     meta = Meta.load(data_dir)
     all_tracks = meta.get_track_ids()
     n = len(all_tracks)
+    print(f"N={n}")
     train_n = int(n*(1-test_split))
 
     print("Collecting training data...")
@@ -41,7 +43,7 @@ def run_hmm_method_all_tracks(data_dir, test_split=0.2):
     sequence_lengths = np.array(sequence_lengths)
     
     print("Training model...")
-    model = hmm.GaussianHMM(n_components=3, covariance_type="full", n_iter=100)
+    model = hmm.GaussianHMM(n_components=4, covariance_type="full", n_iter=100)
     model.fit(sequences, sequence_lengths)
     print("Done.")
     
@@ -53,7 +55,7 @@ def run_hmm_method_all_tracks(data_dir, test_split=0.2):
         analysis = load_analysis(data_dir, track_id)
         seq = format_sequence(analysis)
         prob = model.score(seq)
-        results.append([track_id, key_nums[analysis["key"]], prob])
+        results.append([track_id, "%s %s"% (key_nums[analysis["key"]], modes[analysis["mode"]]), prob])
     print(tabulate(results, headers=["Song ID", "Key label", "HMM probability of C"]))
 
         
