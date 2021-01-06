@@ -137,3 +137,4 @@ bearer-token
 spotify_million_playlist_dataset
 track_analyses
 dataset
+*.csv
