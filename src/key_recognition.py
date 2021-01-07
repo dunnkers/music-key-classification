@@ -10,13 +10,16 @@ modes = ["Minor", "Major"]
 def get_args():
     arg_parser = ArgumentParser()
     arg_parser.add_argument('--data-dir', default='dataset', type=str, help='''
-        The directory where the track data is stored to use for the analysis
+        The directory where the track data is stored to use for the analysis.
         ''')
-    arg_parser.add_argument('--csv', default=False, type=str, help='''
-        Optional filename of a CSV file to store the resulting confusion matrix [NOT YET IMPLEMENTED]
+    arg_parser.add_argument('--give-mode', action='store_true', help='''
+        Optionally test the model with given mode (major/minor).
         ''')
     arg_parser.add_argument('--test-split', default=0.2, type=float, help='''
         The fraction of samples to use as testing data
+        ''')
+    arg_parser.add_argument('--csv', default=False, type=str, help='''
+        Optional filename of a CSV file to store the resulting confusion matrix [NOT YET IMPLEMENTED]
         ''')
     arg_parser.add_argument('--table', action='store_true', help='''
         Whether or not to print a table of all the test samples and their classification
@@ -39,25 +42,22 @@ def get_args():
     return arg_parser.parse_args()
 
 
-def load_data_dict(data_dir, track_ids, mode=False):
+def load_data_dict(data_dir, track_ids):
     testing_data = {}
     for track_id in track_ids:
         analysis = load_analysis(data_dir, track_id)
-        if not mode:
-            testing_data[track_id] = analysis
-        elif analysis["mode"] == mode:
-            testing_data[track_id] = analysis
+        testing_data[track_id] = analysis
     return testing_data
 
-def collect_data(data_dir, test_split, mode=False):
+def collect_data(data_dir, test_split):
     meta = Meta.load(data_dir)
     all_tracks = meta.get_track_ids()
     n = len(all_tracks)
     train_n = int(n*(1-test_split))
     print("Collecting training data...")
-    training_data = load_data_dict(data_dir, all_tracks[:train_n], mode=mode)
+    training_data = load_data_dict(data_dir, all_tracks[:train_n])
     print("Collecting testing data...")
-    testing_data = load_data_dict(data_dir, all_tracks[train_n:], mode=mode)
+    testing_data = load_data_dict(data_dir, all_tracks[train_n:])
     print("Data collected.")
     return training_data, testing_data
 
@@ -75,19 +75,27 @@ def run_key_recognition(args):
         pass
     
     # Collect data
-    training_data, testing_data = collect_data(args.data_dir, args.test_split, mode=1)
+    training_data, testing_data = collect_data(args.data_dir, args.test_split)
 
     # Train model
-    if not args.no_training:
+    if args.method != 'naive' or not args.no_training:
         model.train(training_data)
 
     # Test model
     results_table = []
     test_n = 0
     errors = 0
+    conf_mat = np.zeros((24,24))
+    print("Testing model...")
     for track_id in testing_data:
         track_data = testing_data[track_id]
-        estimation_key = model.predict(track_data)
+        if args.give_mode:
+            estimation_key = model.predict(track_data, mode=track_data["mode"])
+        else:
+            estimation_key = model.predict(track_data)
+        
+        # Confusion matrix
+        conf_mat[estimation_key, track_data["mode"]*12 + track_data["key"]] += 1
 
         # Count errors
         test_n += 1
@@ -99,11 +107,15 @@ def run_key_recognition(args):
             "%s %s"% (key_nums[track_data["key"]], modes[track_data["mode"]]), 
             "%s %s"% (key_nums[estimation_key % 12], modes[estimation_key // 12]),
         ])
-    return errors/test_n, results_table
+    print("Done.")
+    return errors/test_n, results_table, conf_mat
 
 if __name__ == '__main__':
     args = get_args()
-    error, results_table = run_key_recognition(args)
+    error, results_table, confusion_matrix = run_key_recognition(args)
     if args.table:
         print(tabulate(results_table, headers=["Song ID", "Label key", "Predicted key"]))
+        print(confusion_matrix)
     print("Overall error: %5.2f%%" % (error*100))
+    if args.csv is not False:
+        np.savetxt(args.csv, confusion_matrix, delimiter=",", fmt="%d")

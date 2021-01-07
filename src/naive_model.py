@@ -5,6 +5,18 @@ import copy
 class Naive_model:
 
     model = -np.ones((24,12))
+    model[0,:]  = [1, 0,  1, 1,  0, 1, 0,  1, 1,  0, 1,  0]
+    model[1,:]  = [0, 1,  0, 1,  1, 0, 1,  0, 1,  1, 0,  1]
+    model[2,:]  = [1, 0,  1, 0,  1, 1, 0,  1, 0,  1, 1,  0]
+    model[3,:]  = [0, 1,  0, 1,  0, 1, 1,  0, 1,  0, 1,  1]
+    model[4,:]  = [1, 0,  1, 0,  1, 0, 1,  1, 0,  1, 0,  1]
+    model[5,:]  = [1, 1,  0, 1,  0, 1, 0,  1, 1,  0, 1,  0]
+    model[6,:]  = [0, 1,  1, 0,  1, 0, 1,  0, 1,  1, 0,  1]
+    model[7,:]  = [1, 0,  1, 1,  0, 1, 0,  1, 0,  1, 1,  0]
+    model[8,:]  = [0, 1,  0, 1,  1, 0, 1,  0, 1,  0, 1,  1]
+    model[9,:]  = [1, 0,  1, 0,  1, 1, 0,  1, 0,  1, 0,  1]
+    model[10,:] = [1, 1,  0, 1,  0, 1, 1,  0, 1,  0, 1,  0]
+    model[11,:] = [0, 1,  1, 0,  1, 0, 1,  1, 0,  1, 0,  1]
     model[12,:] = [1, 0,  1, 0,  1, 1, 0,  1, 0,  1, 0,  1]
     model[13,:] = [1, 1,  0, 1,  0, 1, 1,  0, 1,  0, 1,  0]
     model[14,:] = [0, 1,  1, 0,  1, 0, 1,  1, 0,  1, 0,  1]
@@ -41,11 +53,18 @@ class Naive_model:
         self.model = np.array(self.model)
         
     
-    def predict(self, test_sample: dict):
+    def predict(self, test_sample: dict, mode=False):
         avg_vec = self.format_sequence(test_sample)
         scores = np.zeros(24)
-        for i in range(0, 24):
-            scores[i] = np.correlate(avg_vec, self.model[i])
+        if mode is False:
+            for i in range(0, 24):
+                scores[i] = np.correlate(avg_vec, self.model[i])
+        elif mode == 0:
+            for i in range(0, 12):
+                scores[i] = np.correlate(avg_vec, self.model[i])
+        else:
+            for i in range(12, 24):
+                scores[i] = np.correlate(avg_vec, self.model[i])
         return np.argmax(scores)
     
     

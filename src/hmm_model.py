@@ -13,9 +13,16 @@ class HMM_model:
         self.model = self.train_model(minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states=3, iterations=100)
         return
     
-    def predict(self, test_sample: dict):
+    def predict(self, test_sample: dict, mode=False):
         seq = self.format_sequence(test_sample)
-        return np.argmax([mdl.score(seq) for mdl in self.model])
+        if mode is False:
+            estimate = np.argmax([mdl.score(seq) for mdl in self.model])
+        elif mode == 0:
+            estimate = np.argmax([mdl.score(seq) for mdl in self.model[:12]])
+        else:
+            estimate = np.argmax([mdl.score(seq) for mdl in self.model[12:]]) + 12
+        return estimate
+
     
     def train_model(self, minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states, iterations):
         model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
