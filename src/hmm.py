@@ -19,22 +19,13 @@ def format_sequence(audio_analysis):
         i += 1
     return seq
 
-def run_hmm_method_all_tracks(data_dir, test_split=0.2):
-    ''' Trains the HMM 
-    '''
-
-    meta = Meta.load(data_dir)
-    all_tracks = meta.get_track_ids()
-    n = len(all_tracks)
-    print(f"N={n}")
-    train_n = int(n*(1-test_split))
-
+def collect_training_data(data_dir, tracks):
     print("Collecting training data...")
     minor_sequences        = np.zeros((0,12))
     minor_sequence_lengths = []
     major_sequences        = np.zeros((0,12))
     major_sequence_lengths = []
-    for track_id in all_tracks[:train_n]:
+    for track_id in tracks:
         analysis = load_analysis(data_dir, track_id)
         
         # Format sequence
@@ -51,9 +42,33 @@ def run_hmm_method_all_tracks(data_dir, test_split=0.2):
 
     minor_sequence_lengths = np.array(minor_sequence_lengths)
     major_sequence_lengths = np.array(major_sequence_lengths)
-    
-    model_minor = hmm.GaussianHMM(n_components=args.hidden_states, covariance_type="full", n_iter=args.iterations)
-    model_major = hmm.GaussianHMM(n_components=args.hidden_states, covariance_type="full", n_iter=args.iterations)
+    return minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths
+
+def collect_testing_data(data_dir, tracks):
+    testing_data = {}
+    for track_id in tracks:
+        analysis = load_analysis(data_dir, track_id)
+        seq = format_sequence(analysis)
+        testing_data[track_id] = {
+            "seq": seq,
+            "key": analysis["key"],
+            "mode": analysis["mode"]
+        }
+    return testing_data
+
+def collect_data(data_dir, test_split):
+    meta = Meta.load(data_dir)
+    all_tracks = meta.get_track_ids()
+    n = len(all_tracks)
+    print(f"N={n}")
+    train_n = int(n*(1-test_split))
+    minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths = collect_training_data(data_dir, all_tracks[:train_n])
+    testing_data = collect_testing_data(data_dir, all_tracks[train_n:])
+    return minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, testing_data
+
+def train_model(minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states, iterations):
+    model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
+    model_major = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
     print("Training minor model...")
     model_minor.fit(minor_sequences, minor_sequence_lengths)
     print("Trained minor model. Converged: %s" % str(model_minor.monitor_.converged))
@@ -61,7 +76,6 @@ def run_hmm_method_all_tracks(data_dir, test_split=0.2):
     model_major.fit(major_sequences, major_sequence_lengths)
     print("Trained major model. Converged: %s" % str(model_major.monitor_.converged))
     print("Done.")
-
     print("Copying models")
     models = []
     for i in range(0, 12):
@@ -74,37 +88,48 @@ def run_hmm_method_all_tracks(data_dir, test_split=0.2):
         key_model.means_ = np.roll(key_model.means_, i, axis=1)
         key_model.covars_ = np.roll(np.roll(key_model.covars_, i, axis=1), i, axis=2)
         models.append(key_model)
+    return models
 
-    print("Testing models...")
-    print("")
+def test_model(model, testing_data):
 
-    results = []
+    print("Testing models...")  
+    results_table = []
     test_n = 0
     errors = 0
     errors_given = 0
-    for track_id in all_tracks[train_n:]:
-        analysis = load_analysis(data_dir, track_id)
-        seq = format_sequence(analysis)
-        top_model = np.argmax([mdl.score(seq) for mdl in models])
-        if analysis["mode"] == 1:
-            top_model_given = np.argmax([mdl.score(seq) for mdl in models[12:]])
+    for track_id in testing_data:
+        track_data = testing_data[track_id]
+
+        estimation_key = np.argmax([mdl.score(track_data["seq"]) for mdl in model])
+
+        if track_data["mode"] == 1:
+            estimation_key_given = np.argmax([mdl.score(track_data["seq"]) for mdl in model[12:]])
         else:
-            top_model_given = np.argmax([mdl.score(seq) for mdl in models[:12]])
-        results.append([track_id, 
-            "%s %s"% (key_nums[analysis["key"]], modes[analysis["mode"]]), 
-            "%s %s"% (key_nums[top_model % 12], modes[top_model // 12]), 
-            "%s %s"% (key_nums[top_model_given], modes[analysis["mode"]])
+            estimation_key_given = np.argmax([mdl.score(track_data["seq"]) for mdl in model[:12]])
+
+        results_table.append([track_id, 
+            "%s %s"% (key_nums[track_data["key"]], modes[track_data["mode"]]), 
+            "%s %s"% (key_nums[estimation_key % 12], modes[estimation_key // 12]), 
+            "%s %s"% (key_nums[estimation_key_given], modes[track_data["mode"]])
         ])
 
         # Count errors
         test_n += 1
-        if not (analysis["key"] == top_model % 12 and analysis["mode"] == top_model // 12):
+        if not (track_data["key"] == estimation_key % 12 and track_data["mode"] == estimation_key // 12):
             errors += 1
-        if not (analysis["key"] == top_model_given):
+        if not (track_data["key"] == estimation_key_given):
             errors_given += 1
-    #print(tabulate(results, headers=["Song ID", "Key label", "Predicted", "Predicted if mode is given"]))
-    return errors/test_n, errors_given/test_n
+    return errors/test_n, errors_given/test_n, results_table
+    
 
+def run_hmm_method_all_tracks(data_dir, hidden_states, iterations, test_split=0.2):
+    ''' Trains the HMM 
+    '''
+    
+    minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, testing_data = collect_data(data_dir, test_split)
+    model = train_model(minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states=3, iterations=100)
+    error, error_given, results_table = test_model(model, testing_data)
+    return error, error_given, results_table
         
 
 
@@ -113,8 +138,11 @@ def get_args():
     arg_parser.add_argument('--data-dir', default='dataset', type=str, help='''
         The directory where the track data is stored to use for the analysis
         ''')
+    arg_parser.add_argument('--table', action='store_true', help='''
+        Print the results on the test set in a table.
+        ''')
     arg_parser.add_argument('--model-file', default=False, type=str, help='''
-        Optional filename of a CSV file to store the resulting HMM model.
+        [NOT YET IMPLEMENTED] Optional filename of a CSV file to store the resulting HMM model.
         ''')
     arg_parser.add_argument('--hidden-states', default=3, type=int, help='''
         Set the number of hidden states for the HMM.
@@ -127,7 +155,9 @@ def get_args():
 
 if __name__ == '__main__':
     args = get_args()
-    error, error_given = run_hmm_method_all_tracks(args.data_dir)
+    error, error_given, results_table = run_hmm_method_all_tracks(args.data_dir, args.hidden_states, args.iterations)
+    if args.table:
+        print(tabulate(results_table, headers=["Label", "Estimate", "Estimate [mode given]"]))
     print("%26s %7.2f%%" % ("Error:", error*100) )
     print("%26s %7.2f%%" % ("Error [mode given]:", error_given*100) )
     
