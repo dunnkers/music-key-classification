@@ -48,6 +48,11 @@ def n_track_analyses_generator(track_ids):
         elif 'Retry-After' in headers:
             print(f"Got status code {response.status_code} with a Retry-After header. Retrying after {headers['Retry-After']}")
             process_retry(headers['Retry-After'])
+        elif response.status_code == 404:
+            print(f"received 404 for track {track_id}.")
+            track_ids.remove(track_id)
+            result = {'track_not_found': track_id}
+            yield result
         else:
             print(response)
             raise Exception("Unexpected non-200 status code")
