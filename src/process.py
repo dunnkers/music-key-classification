@@ -1,3 +1,11 @@
+def extract_audio_features(audio_features):
+    return {
+        "id": audio_features['id'],
+        "key": audio_features['key'],
+        "mode": audio_features['mode']
+    }
+
+
 def extract_track_analysis(track_analysis):
     return {
         "id": track_analysis['track']['id'],

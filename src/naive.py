@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from meta import Meta
+from tracklist import TrackList
 from data import load_analysis
 import numpy as np
 
@@ -57,7 +57,7 @@ def run_naive_method_all_tracks(data_dir):
     and computes a confusion matrix.
     '''
 
-    meta = Meta.load(data_dir)
+    meta = TrackList.load_from_dir(data_dir)
     all_tracks = meta.get_track_ids()
 
     i = 0

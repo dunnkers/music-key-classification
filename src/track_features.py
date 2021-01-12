@@ -5,7 +5,7 @@ from requests import get
 
 from authorize import get_token
 
-track_analysis_endpoint = 'https://api.spotify.com/v1/audio-analysis'
+track_analysis_endpoint = 'https://api.spotify.com/v1/audio-features'
 
 
 def isfloat(flt):
@@ -23,34 +23,23 @@ def process_retry(retry_after):
     sleep(retry_after)
 
 
-def _get_track_analysis_url(track_id):
-    return f'{track_analysis_endpoint}/{track_id}'
+def _get_track_features_url():
+    return f'{track_analysis_endpoint}'
 
 
-def n_track_analyses_generator(track_ids):
+def n_track_features(track_ids):
     token = get_token()
     headers = {'Authorization': f"{token['token_type']} {token['access_token']}"}
-    idx = 0
-    start_time = time()
     while True:
-        if idx == len(track_ids):
-            break
-        print(f'looking for track {idx} out of {len(track_ids)}')
-        track_id = track_ids[idx]
-        response = get(_get_track_analysis_url(track_id), headers=headers)
+        response = get(_get_track_features_url(), headers=headers, params={'ids': ','.join(track_ids)})
         if response.status_code == 429:
-            print(f'we were rate limited after {idx + 1} requests')
+            print(f'we were rate limited')
         if response.status_code == 200:
-            result = response.json()
-            result['track']['id'] = track_id
-            yield result
-            idx += 1
+            return response.json()['audio_features']
         elif 'Retry-After' in headers:
             print(f"Got status code {response.status_code} with a Retry-After header. Retrying after {headers['Retry-After']}")
             process_retry(headers['Retry-After'])
         else:
             print(response)
-            print(response.json())
+            print(response.reason)
             raise Exception("Unexpected non-200 status code")
-    total_time = time() - start_time
-    print(f'fetched {len(track_ids)} track analysis objects in {total_time:.3f} seconds')

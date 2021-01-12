@@ -1,5 +1,5 @@
 import requests
-import pickle
+import dill as pickle
 import os
 import os.path as path
 import time
@@ -18,7 +18,6 @@ def get_pickle_file_name():
 
 
 def store_token(token):
-    print('storing token')
     # Time we received it (in secs) + time it lasts (in secs) is time it expires (in secs)
     token['expire_time'] = time.time() + token['expires_in']
     with open(get_pickle_file_name(), 'wb') as f:
@@ -26,13 +25,11 @@ def store_token(token):
 
 
 def load_token():
-    print('loading token')
     with open(get_pickle_file_name(), 'rb') as f:
         return pickle.load(f)
 
 
 def fetch_new_token():
-    print('fetching new token')
     payload = {'grant_type': 'client_credentials'}
     r = requests.post('https://accounts.spotify.com/api/token', data=payload,
                       auth=(get_client_id(), get_client_secret()))
@@ -41,12 +38,9 @@ def fetch_new_token():
 
 def get_token():
     if (path.lexists(get_pickle_file_name())):
-        print('token exists in file')
         token = load_token()
         if time.time() < (token['expire_time'] - 0.1):
-            print('token still valid')
             return token
-        print('token no longer valid')
     token = fetch_new_token()
     store_token(token)
     return token
