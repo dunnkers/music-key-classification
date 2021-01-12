@@ -29,3 +29,33 @@ Run `python src/data.py resume` to resume fetching the objects from the spotify 
 Run `python src/data.py check` to check if the data in OUTPUT_DIR is complete and valid.
 
 Run `python src/data.py <command> --help` to get more information on a command and its options.
+
+## Running the "naive" method on the dataset
+
+To analyse the downloaded audio analysis using a naive method, use the `src/naive.py` script:
+
+```
+python src/naive.py --data-dir dataset --csv output.csv
+```
+
+Make sure the `data-dir` matches the `output-dir` from the fetching step. For example, running the command above after fetching 250 tracks, the result is:
+
+```
+[[14.  0.  0.  0.  1.  0.  0.  3.  0.  0.  0.  0.]
+ [ 0. 13.  1.  0.  0.  0.  6.  0.  0.  0.  0.  1.]
+ [ 0.  0. 16.  0.  0.  0.  0.  1.  0.  1.  0.  0.]
+ [ 1.  1.  0.  1.  0.  0.  0.  0.  0.  0.  2.  0.]
+ [ 0.  0.  0.  0. 16.  0.  0.  0.  0.  5.  0.  0.]
+ [ 1.  0.  1.  0.  0.  6.  0.  0.  0.  0.  0.  0.]
+ [ 0.  0.  0.  0.  0.  0.  4.  0.  0.  0.  0.  0.]
+ [ 2.  0.  1.  0.  0.  0.  0. 11.  0.  0.  0.  0.]
+ [ 0.  5.  2.  1.  0.  3.  1.  1. 10.  0.  1.  0.]
+ [ 0.  0.  2.  0.  0.  0.  0.  0.  0. 11.  0.  0.]
+ [ 0.  0.  0.  1.  0.  0.  0.  0.  0.  0.  5.  0.]
+ [ 0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  6.]]
+N=158
+Overall accuracy: 71.52%
+```
+
+Note that tracks that are in minor key are ignored for now, so N is lower than 250.
+
