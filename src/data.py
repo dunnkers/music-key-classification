@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from os import makedirs
 from os.path import exists, isdir, join
 from shutil import rmtree
-from pickle import dump
+from pickle import dump, load
 
 from meta import Meta
 from mpl import list_track_ids
@@ -21,6 +21,10 @@ def get_track_path(output_dir, track_id):
 def store_extracted_analysis(output_dir, extracted_track_analysis):
     with open(get_track_path(output_dir, extracted_track_analysis['id']), 'wb+') as f:
         dump(extracted_track_analysis, f)
+
+def load_analysis(output_dir, track_id):
+    with open(get_track_path(output_dir, track_id), 'rb') as f:
+        return load(f)
 
 
 def create_meta(track_ids):
@@ -43,9 +47,14 @@ def start_fetching(mpl_dir, output_dir, n_tracks):
     meta.dump(output_dir)
     track_analyses = n_track_analyses_generator(track_ids)
     for track_analysis in track_analyses:
+        if 'track_not_found' in track_analysis:
+            meta.remove_track_id(track_analysis['track_not_found'])
+            print(f"removed {track_analysis['track_not_found']} from dataset")
+            continue
         extracted = extract_track_analysis(track_analysis)
         store_extracted_analysis(output_dir, extracted)
     print('done fetching')
+    meta.dump(output_dir)
 
 
 def resume_fetching(output_dir):
@@ -54,9 +63,14 @@ def resume_fetching(output_dir):
     track_ids = [track_id for track_id in meta.get_track_ids() if not exists(get_track_path(output_dir, track_id))]
     track_analyses = n_track_analyses_generator(track_ids)
     for track_analysis in track_analyses:
+        if 'track_not_found' in track_analysis:
+            meta.remove_track_id(track_analysis['track_not_found'])
+            print(f"removed {track_analysis['track_not_found']} from dataset")
+            continue
         extracted = extract_track_analysis(track_analysis)
         store_extracted_analysis(output_dir, extracted)
     print('done fetching')
+    meta.dump(output_dir)
 
 
 def get_missing(output_dir):
