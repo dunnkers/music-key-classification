@@ -17,7 +17,7 @@ def add_list_parser(sub_parsers):
     list_sub_parser.add_argument('--list-dir', default='', type=str, help='''
         The path to store the track list as a .pickle file.
     ''')
-    list_sub_parser.add_argument('N', type=int, help='''
+    list_sub_parser.add_argument('-N', default=10, type=int, help='''
         The amount of tracks to fetch.
     ''')
 
@@ -45,7 +45,7 @@ def add_missing_parser(sub_parsers):
             List missing data points
         ''')
     check_sub_parser.add_argument(
-        'data-type',
+        'data_type',
         default=AUDIO_ANALYSIS,
         choices=[AUDIO_ANALYSIS, AUDIO_FEATURES],
         type=str,
@@ -58,7 +58,7 @@ def add_obsolete_parser(sub_parsers):
             List obsolete data points
         ''')
     obsolete_sub_parser.add_argument(
-        'data-type',
+        'data_type',
         default=AUDIO_ANALYSIS,
         choices=[AUDIO_ANALYSIS, AUDIO_FEATURES],
         type=str,

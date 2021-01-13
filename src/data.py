@@ -133,9 +133,9 @@ def get_missing(output_dir, data_type):
 def get_obsolete(output_dir, data_type):
     meta = TrackList.load_from_dir(output_dir)
     return [
-        str(track_file).strip('.pickle')
+        str(track_file.name).split('.')[0]
         for track_file in Path(get_data_dir(output_dir, data_type)).glob('*.pickle')
-        if not meta.have_track_id(str(track_file).strip('.pickle'))
+        if not meta.have_track_id(str(track_file.name).split('.')[0])
     ]
 
 
