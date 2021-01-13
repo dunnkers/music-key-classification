@@ -121,8 +121,13 @@ def fetch(output_dir):
         makedirs(get_data_dir(output_dir, AUDIO_ANALYSIS))
     track_analyses = n_track_analyses_generator(track_ids)
     for track_analysis in track_analyses:
+        if 'track_not_found' in track_analysis:
+            meta.remove_track_id(track_analysis['track_not_found'])
+            print(f"removed {track_analysis['track_not_found']} from dataset")
+            continue
         extracted = extract_track_analysis(track_analysis)
         store_extracted_analysis(output_dir, extracted)
+    meta.dump(output_dir)
 
 
 def get_missing(output_dir, data_type):

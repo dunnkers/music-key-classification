@@ -22,6 +22,10 @@ class TrackList:
     def have_track_id(self, track_id: str):
         return track_id in self.track_id_set
 
+    def remove_track_id(self, track_id):
+        self.track_ids.remove(track_id)
+        self.track_id_set.remove(track_id)
+
     def dump(self, output_dir):
         with open(join(output_dir, 'track_list.pickle'), 'wb') as f:
             dump(self, f)
