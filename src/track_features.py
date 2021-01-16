@@ -28,6 +28,8 @@ def _get_track_features_url():
 
 
 def n_track_features(track_ids):
+    if len(track_ids) == 0:
+        return []
     token = get_token()
     headers = {'Authorization': f"{token['token_type']} {token['access_token']}"}
     while True:

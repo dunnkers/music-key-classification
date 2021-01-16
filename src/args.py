@@ -17,7 +17,7 @@ def add_list_parser(sub_parsers):
     list_sub_parser.add_argument('--list-dir', default='', type=str, help='''
         The path to store the track list as a .pickle file.
     ''')
-    list_sub_parser.add_argument('-N', default=10, type=int, help='''
+    list_sub_parser.add_argument('-N', default=0, type=int, help='''
         The amount of tracks to fetch.
     ''')
 
@@ -36,26 +36,32 @@ def add_check_parser(sub_parsers):
 
 def add_count_parser(sub_parsers):
     count_sub_parser = sub_parsers.add_parser('count', help='''
-        Check if the data in OUTPUT_DIR is complete and valid
+        Count the datapoints fetched so far
     ''')
 
 
 def add_missing_parser(sub_parsers):
-    check_sub_parser = sub_parsers.add_parser('missing', help='''
-            List missing data points
+    missing_sub_parser = sub_parsers.add_parser('missing', help='''
+            List missing ids of data points
         ''')
-    check_sub_parser.add_argument(
+    missing_sub_parser.add_argument(
         'data_type',
         default=AUDIO_ANALYSIS,
         choices=[AUDIO_ANALYSIS, AUDIO_FEATURES],
         type=str,
         help='''The type of data point to list missing for'''
     )
+    missing_sub_parser.add_argument(
+        '--absolute',
+        default=False,
+        type=bool,
+        help='''If set to True, outputs absolute paths to files containing the tracks'''
+    )
 
 
 def add_obsolete_parser(sub_parsers):
     obsolete_sub_parser = sub_parsers.add_parser('obsolete', help='''
-            List obsolete data points
+            List ids of obsolete data points
         ''')
     obsolete_sub_parser.add_argument(
         'data_type',
@@ -63,6 +69,11 @@ def add_obsolete_parser(sub_parsers):
         choices=[AUDIO_ANALYSIS, AUDIO_FEATURES],
         type=str,
         help='''The type of data point to list missing for'''
+    )
+    obsolete_sub_parser.add_argument(
+        '--absolute',
+        action='store_true',
+        help='''If set to True, outputs absolute paths to files containing the tracks'''
     )
 
 

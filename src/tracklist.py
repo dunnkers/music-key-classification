@@ -7,6 +7,13 @@ class TrackList:
     def __init__(self):
         self.track_ids = []
         self.track_id_set = set([])
+        self.desired_tracks_amount = 0
+
+    def get_desired_tracks_amount(self):
+        return self.desired_tracks_amount
+
+    def set_desired_tracks_amount(self, n: int):
+        self.desired_tracks_amount = n
 
     def get_track_ids(self):
         return self.track_ids
@@ -29,10 +36,6 @@ class TrackList:
     def dump(self, output_dir):
         with open(join(output_dir, 'track_list.pickle'), 'wb') as f:
             dump(self, f)
-
-    def ids(self):
-        for track_id in self.track_ids:
-            yield track_id
 
     def hash(self):
         return hash(''.join(sorted(self.track_ids)))
