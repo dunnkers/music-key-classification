@@ -3,7 +3,7 @@ from os import listdir
 from json import load
 
 
-def track_id_generator(mpl_data_path):
+def track_id_generator(mpl_data_path, have_id=None):
     files = listdir(mpl_data_path)
     for file in files:
         with open(join(mpl_data_path, file), 'r') as f:
