@@ -15,7 +15,7 @@ Run:
 (run `python -m venv venv` for older versions)
 
 ## Fetching the dataset
-
+Once you have downloaded the file from [Here](https://www.aicrowd.com/challenges/spotify-million-playlist-dataset-challenge/dataset_files)
 * Run `python src/data.py list -N <number_of_tracks` to create a list of tracks. Will fetch the corresponding 
 audio_features objects from the spotify API in batches of 100, stores these objects in '<output_dir>/audio_features/'.
 * Run `python src/data.py list --use-list <path_to_list>` to continue creating a list of tracks using the track list 
