@@ -25,8 +25,8 @@ class HMM_model:
 
     
     def train_model(self, minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states, iterations):
-        model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
-        model_major = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
+        model_minor = hmm.GMMHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
+        model_major = hmm.GMMHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
         print("Training minor model...")
         model_minor.fit(minor_sequences, minor_sequence_lengths)
         print("Trained minor model. Converged: %s" % str(model_minor.monitor_.converged))

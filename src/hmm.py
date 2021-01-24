@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from meta import Meta
+from tracklist import TrackList as Meta
 from data import load_analysis
 import numpy as np
 from hmmlearn import hmm
@@ -57,7 +57,7 @@ def collect_testing_data(data_dir, tracks):
     return testing_data
 
 def collect_data(data_dir, test_split):
-    meta = Meta.load(data_dir)
+    meta = Meta.load_from_dir(data_dir)
     all_tracks = meta.get_track_ids()
     n = len(all_tracks)
     print(f"N={n}")
