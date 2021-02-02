@@ -15,7 +15,7 @@ Run:
 (run `python -m venv venv` for older versions)
 
 ## Fetching the dataset
-
+Once you have downloaded the file from [Here](https://www.aicrowd.com/challenges/spotify-million-playlist-dataset-challenge/dataset_files)
 * Run `python src/data.py list -N <number_of_tracks` to create a list of tracks. Will fetch the corresponding 
 audio_features objects from the spotify API in batches of 100, stores these objects in '<output_dir>/audio_features/'.
 * Run `python src/data.py list --use-list <path_to_list>` to continue creating a list of tracks using the track list 
@@ -24,34 +24,67 @@ audio_features objects from the spotify API in batches of 100, stores these obje
   directory.
 * Run `python src/data.py <command> --help` to get more information on a command and its options.
 
-## Running the "naive" method on the dataset
+## Running the models
 
-To analyse the downloaded audio analysis using a naive method, use the `src/naive.py` script:
-
-```
-python src/naive.py --data-dir dataset --csv output.csv
-```
-
-Make sure the `data-dir` matches the `output-dir` from the fetching step. For example, running the command above after fetching 250 tracks, the result is:
+To run one of the models, use the `src/key_recognition.py` script.
 
 ```
-[[14.  0.  0.  0.  1.  0.  0.  3.  0.  0.  0.  0.]
- [ 0. 13.  1.  0.  0.  0.  6.  0.  0.  0.  0.  1.]
- [ 0.  0. 16.  0.  0.  0.  0.  1.  0.  1.  0.  0.]
- [ 1.  1.  0.  1.  0.  0.  0.  0.  0.  0.  2.  0.]
- [ 0.  0.  0.  0. 16.  0.  0.  0.  0.  5.  0.  0.]
- [ 1.  0.  1.  0.  0.  6.  0.  0.  0.  0.  0.  0.]
- [ 0.  0.  0.  0.  0.  0.  4.  0.  0.  0.  0.  0.]
- [ 2.  0.  1.  0.  0.  0.  0. 11.  0.  0.  0.  0.]
- [ 0.  5.  2.  1.  0.  3.  1.  1. 10.  0.  1.  0.]
- [ 0.  0.  2.  0.  0.  0.  0.  0.  0. 11.  0.  0.]
- [ 0.  0.  0.  1.  0.  0.  0.  0.  0.  0.  5.  0.]
- [ 0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  6.]]
-N=158
-Overall accuracy: 71.52%
+python src/key_recognition.py -h
+usage: key_recognition.py [-h] [--data-dir DATA_DIR] [--give-mode]
+                          [--test-split TEST_SPLIT] [--csv CSV] [--table]
+                          {naive,hmm} ...
+
+positional arguments:
+  {naive,hmm}
+    naive               Test classification using the naive method.
+    hmm                 Test classification using the HMM method.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --data-dir DATA_DIR   The directory where the track data is stored to use
+                        for the analysis.
+  --give-mode           Optionally test the model with given mode
+                        (major/minor).
+  --test-split TEST_SPLIT
+                        The fraction of samples to use as testing data
+  --csv CSV             Optional filename of a CSV file to store the resulting
+                        confusion matrix
+  --table               Whether or not to print a table of all the test
+                        samples and their classification
 ```
 
-Note that tracks that are in minor key are ignored for now, so N is lower than 250.
+For example the naive method (it's highly recommended _not_ to train this model):
+
+```
+python src/key_recognition.py --give-mode naive --no-training
+Collecting training data...
+Collecting testing data...
+Data collected.
+Testing model...
+Done.
+Overall error: 34.00%
+```
+
+And the HMM method:
+
+```
+python src/key_recognition.py --give-mode hmm
+Collecting training data...
+Collecting testing data...
+Data collected.
+Formatting training data...
+Done.
+Training minor model...
+Trained minor model. Converged: True
+Training major model...
+Trained major model. Converged: True
+Done.
+Copying models...
+Done
+Testing model...
+Done.
+Overall error: 31.20%
+```
 
 Run `python src/data.py <command> --help` to get more information on a command and its options.
 

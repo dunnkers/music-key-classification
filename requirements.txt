@@ -11,3 +11,4 @@ seqlearn==0.2
 numpy==1.19.3
 six==1.15.0
 urllib3==1.25.11
+halo==0.0.31

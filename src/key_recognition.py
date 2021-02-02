@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from meta import Meta
+from tracklist import TrackList
 from data import load_analysis
 import numpy as np
 from tabulate import tabulate
@@ -19,7 +19,7 @@ def get_args():
         The fraction of samples to use as testing data
         ''')
     arg_parser.add_argument('--csv', default=False, type=str, help='''
-        Optional filename of a CSV file to store the resulting confusion matrix [NOT YET IMPLEMENTED]
+        Optional filename of a CSV file to store the resulting confusion matrix
         ''')
     arg_parser.add_argument('--table', action='store_true', help='''
         Whether or not to print a table of all the test samples and their classification
@@ -50,8 +50,8 @@ def load_data_dict(data_dir, track_ids):
     return testing_data
 
 def collect_data(data_dir, test_split):
-    meta = Meta.load(data_dir)
-    all_tracks = meta.get_track_ids()
+    track_list = TrackList.load_from_dir(data_dir)
+    all_tracks = track_list.get_track_ids()
     n = len(all_tracks)
     train_n = int(n*(1-test_split))
     print("Collecting training data...")
@@ -62,9 +62,11 @@ def collect_data(data_dir, test_split):
     return training_data, testing_data
 
 
-''' MAIN PROGRAM '''
 
+''' MAIN PROGRAM '''
 def run_key_recognition(args):
+
+    # Import selected model
     if args.method == 'naive':
         from naive_model import Naive_model
         model = Naive_model()
@@ -81,11 +83,13 @@ def run_key_recognition(args):
     if args.method != 'naive' or not args.no_training:
         model.train(training_data)
 
-    # Test model
+    
     results_table = []
     test_n = 0
     errors = 0
     conf_mat = np.zeros((24,24))
+
+    # Try all the testing samples on the model
     print("Testing model...")
     for track_id in testing_data:
         track_data = testing_data[track_id]
@@ -108,14 +112,19 @@ def run_key_recognition(args):
             "%s %s"% (key_nums[estimation_key % 12], modes[estimation_key // 12]),
         ])
     print("Done.")
+
     return errors/test_n, results_table, conf_mat
 
 if __name__ == '__main__':
     args = get_args()
+
     error, results_table, confusion_matrix = run_key_recognition(args)
+    
     if args.table:
         print(tabulate(results_table, headers=["Song ID", "Label key", "Predicted key"]))
         print(confusion_matrix)
+    
     print("Overall error: %5.2f%%" % (error*100))
+    
     if args.csv is not False:
         np.savetxt(args.csv, confusion_matrix, delimiter=",", fmt="%d")
