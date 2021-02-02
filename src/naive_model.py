@@ -1,5 +1,4 @@
 import numpy as np
-from hmmlearn import hmm
 import copy
 
 class Naive_model:
@@ -71,13 +70,11 @@ class Naive_model:
     
     def format_sequence(self, audio_analysis):
         # Reformat data
-        num_segments = len(audio_analysis["segments"])
+        num_segments = len(audio_analysis["pitches"])
         input_data = np.zeros((num_segments, 13))
-        i = 0
-        for segment in audio_analysis["segments"]:
-            input_data[i,0]  = segment["duration"]
-            input_data[i,1:] = segment["pitches"]
-            i += 1
+        for i in range(num_segments):
+            input_data[i,0]  = audio_analysis["duration"][i]
+            input_data[i,1:] = audio_analysis["pitches"][i]
         
         # Return weighted average chroma key vector
         avg_vec = np.average(input_data[:,1:], axis=0, weights=input_data[:,0])
