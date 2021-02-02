@@ -1,9 +1,12 @@
 import operator
-from functools import reduce, partial
+from argparse import ArgumentParser
+from functools import partial, reduce
 from math import ceil
-from os import makedirs, getcwd
-from os.path import exists, join
+from os import getcwd, makedirs
+from os.path import exists, isdir, join
 from pathlib import Path
+from pickle import dump, load
+from shutil import rmtree
 from typing import Generator
 
 from dill import dump, load
@@ -11,11 +14,12 @@ from halo import Halo
 
 from args import get_args
 from constants import AUDIO_ANALYSIS, AUDIO_FEATURES
-from tracklist import TrackList
-from mpl import track_id_generator
+from meta import Meta
+from mpl import list_track_ids, track_id_generator
+from process import extract_audio_features, extract_track_analysis
 from track_analysis import n_track_analyses_generator
-from process import extract_track_analysis, extract_audio_features
 from track_features import n_track_features
+from tracklist import TrackList
 
 
 def get_data_dir(output_dir, data_type) -> str:
@@ -29,10 +33,37 @@ def get_track_data_path(output_dir, data_type, track_id) -> str:
 def get_audio_analysis_path(output_dir, track_id) -> str:
     return get_track_data_path(output_dir, AUDIO_ANALYSIS, track_id)
 
+def load_analysis(output_dir, track_id):
+    with open(get_track_path(output_dir, track_id), 'rb') as f:
+        return load(f)
+
 
 def get_audio_features_path(output_dir, track_id) -> str:
     return get_track_data_path(output_dir, AUDIO_FEATURES, track_id)
 
+
+def start_fetching(mpl_dir, output_dir, n_tracks):
+    if not exists(mpl_dir) or not isdir(mpl_dir):
+        print(f"{mpl_dir} is not an existing directory")
+        exit()
+    if exists(output_dir) and isdir(output_dir):
+        print(f"{output_dir} is an existing directory, deleting it")
+        rmtree(output_dir)
+    makedirs(output_dir)
+    print("starting fetching...")
+    track_ids = list_track_ids(mpl_dir, n_tracks)
+    meta = create_meta(track_ids)
+    meta.dump(output_dir)
+    track_analyses = n_track_analyses_generator(track_ids)
+    for track_analysis in track_analyses:
+        if 'track_not_found' in track_analysis:
+            meta.remove_track_id(track_analysis['track_not_found'])
+            print(f"removed {track_analysis['track_not_found']} from dataset")
+            continue
+        extracted = extract_track_analysis(track_analysis)
+        store_extracted_analysis(output_dir, extracted)
+    print('done fetching')
+    meta.dump(output_dir)
 
 def store_datapoint(output_dir, data_type, datapoint) -> None:
     with open(get_track_data_path(output_dir, data_type, datapoint['id']), 'wb') as f:

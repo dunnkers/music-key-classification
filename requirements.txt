@@ -5,6 +5,10 @@ idna==2.10
 numpy==1.19.3
 python-dateutil==2.8.1
 requests==2.24.0
+Cython==0.29.21
+scikit-learn==0.22
+seqlearn==0.2
+numpy==1.19.3
 six==1.15.0
 urllib3==1.25.11
 halo==0.0.31
