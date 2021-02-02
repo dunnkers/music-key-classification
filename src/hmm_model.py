@@ -2,6 +2,7 @@ import numpy as np
 from hmmlearn import hmm
 import copy
 
+
 class HMM_model:
 
     model = None
@@ -29,6 +30,8 @@ class HMM_model:
         # Train two base models for major and minor
         model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
         model_major = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
+        # model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="diag", n_iter=iterations)
+        # model_major = hmm.GaussianHMM(n_components=hidden_states, covariance_type="diag", n_iter=iterations)
         print("Training minor model...")
         model_minor.fit(minor_sequences, minor_sequence_lengths)
         print("Trained minor model. Converged: %s" % str(model_minor.monitor_.converged))
