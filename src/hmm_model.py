@@ -81,10 +81,4 @@ class HMM_model:
         return minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths
     
     def format_sequence(self, audio_analysis):
-        num_segments = len(audio_analysis["segments"])
-        seq = np.zeros((num_segments, 12))
-        i = 0
-        for segment in audio_analysis["segments"]:
-            seq[i,:] = segment["pitches"]
-            i += 1
-        return seq
+        return audio_analysis["pitches"]
