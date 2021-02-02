@@ -9,9 +9,11 @@ class HMM_model:
     mixture = False
     
     def train(self, training_data_dict: dict, verbose=False):
-        print("Formatting training data...")
+        if verbose:
+            print("Formatting training data...")
         minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths = self.format_training_data(training_data_dict)
-        print("Done.")
+        if verbose:
+            print("Done.")
         self.model = self.train_model(minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states=3, iterations=100, verbose=verbose)
         return
     
@@ -36,16 +38,20 @@ class HMM_model:
             model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations, verbose=verbose)
             model_major = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations, verbose=verbose)
         
-        print("Training minor model...")
+        if verbose:
+            print("Training minor model...")
         model_minor.fit(minor_sequences, minor_sequence_lengths)
-        print("Trained minor model. Converged: %s" % str(model_minor.monitor_.converged))
-        print("Training major model...")
+        if verbose:
+            print("Trained minor model. Converged: %s" % str(model_minor.monitor_.converged))
+            print("Training major model...")
         model_major.fit(major_sequences, major_sequence_lengths)
-        print("Trained major model. Converged: %s" % str(model_major.monitor_.converged))
-        print("Done.")
+        if verbose:
+            print("Trained major model. Converged: %s" % str(model_major.monitor_.converged))
+            print("Done.")
 
         # Transpose the base models to all other keys
-        print("Copying models...")
+        if verbose:
+            print("Copying models...")
         models = []
         for i in range(0, 12):
             key_model = copy.deepcopy(model_minor)
@@ -65,7 +71,8 @@ class HMM_model:
                 key_model.means_ = np.roll(key_model.means_, i, axis=1)
                 key_model.covars_ = np.roll(np.roll(key_model.covars_, i, axis=1), i, axis=2)
             models.append(key_model)
-        print("Done")
+        if verbose:
+            print("Done")
         return models
 
     def format_training_data(self, training_data_dict: dict):

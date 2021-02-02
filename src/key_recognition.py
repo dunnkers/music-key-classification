@@ -15,8 +15,8 @@ def get_args():
     arg_parser.add_argument('--give-mode', action='store_true', help='''
         Optionally test the model with given mode (major/minor).
         ''')
-    arg_parser.add_argument('--test-split', default=0.2, type=float, help='''
-        The fraction of samples to use as testing data
+    arg_parser.add_argument('--test-split', default=5, type=int, help='''
+        Use 1/N of the data for test validation
         ''')
     arg_parser.add_argument('--csv', default=False, type=str, help='''
         Optional filename of a CSV file to store the resulting confusion matrix
@@ -26,6 +26,9 @@ def get_args():
         ''')
     arg_parser.add_argument('--verbose', action='store_true', help='''
         Verbose model training
+        ''')
+    arg_parser.add_argument('--cross-validation', action='store_true', help='''
+        Run N-fold cross-validation (N = <--test-split>)
         ''')
     sub_parsers = arg_parser.add_subparsers(dest='method')
     sub_parsers.required = True
@@ -55,22 +58,27 @@ def load_data_dict(data_dir, track_ids):
         testing_data[track_id] = analysis
     return testing_data
 
-def collect_data(data_dir, test_split):
+def collect_data(data_dir, test_split, test_split_index=0 , verbose=False):
     track_list = TrackList.load_from_dir(data_dir)
     all_tracks = track_list.get_track_ids()
     n = len(all_tracks)
-    train_n = int(n*(1-test_split))
-    print("Collecting training data...")
-    training_data = load_data_dict(data_dir, all_tracks[:train_n])
-    print("Collecting testing data...")
-    testing_data = load_data_dict(data_dir, all_tracks[train_n:])
-    print("Data collected.")
+    chunks = np.array_split(np.arange(n), test_split)
+    test_split =  chunks[test_split_index]
+    train_split = np.concatenate(chunks[:test_split_index] + chunks[test_split_index+1:])
+    if verbose:
+        print("Collecting training data...")
+    training_data = load_data_dict(data_dir, np.array(all_tracks)[train_split])
+    if verbose:
+        print("Collecting testing data...")
+    testing_data = load_data_dict(data_dir, np.array(all_tracks)[test_split])
+    if verbose:
+        print("Data collected.")
     return training_data, testing_data
 
 
 
 ''' MAIN PROGRAM '''
-def run_key_recognition(args):
+def run_key_recognition(args, verbose=True, test_split_index=0):
 
     # Import selected model
     if args.method == 'naive':
@@ -85,12 +93,11 @@ def run_key_recognition(args):
         pass
     
     # Collect data
-    training_data, testing_data = collect_data(args.data_dir, args.test_split)
+    training_data, testing_data = collect_data(args.data_dir, args.test_split, test_split_index=test_split_index, verbose=verbose)
 
     # Train model
     if args.method != 'naive' or not args.no_training:
-        model.train(training_data, verbose=args.verbose)
-
+        model.train(training_data, verbose=verbose)
     
     results_table = []
     test_n = 0
@@ -98,7 +105,8 @@ def run_key_recognition(args):
     conf_mat = np.zeros((24,24))
 
     # Try all the testing samples on the model
-    print("Testing model...")
+    if verbose:
+        print("Testing model...")
     for track_id in testing_data:
         track_data = testing_data[track_id]
         if args.give_mode:
@@ -119,20 +127,32 @@ def run_key_recognition(args):
             "%s %s"% (key_nums[track_data["key"]], modes[track_data["mode"]]), 
             "%s %s"% (key_nums[estimation_key % 12], modes[estimation_key // 12]),
         ])
-    print("Done.")
+    if verbose:
+        print("Done.")
 
     return errors/test_n, results_table, conf_mat
 
 if __name__ == '__main__':
     args = get_args()
 
-    error, results_table, confusion_matrix = run_key_recognition(args)
-    
-    if args.table:
-        print(tabulate(results_table, headers=["Song ID", "Label key", "Predicted key"]))
-        print(confusion_matrix)
-    
-    print("Overall error: %5.2f%%" % (error*100))
-    
-    if args.csv is not False:
-        np.savetxt(args.csv, confusion_matrix, delimiter=",", fmt="%d")
+    if args.cross_validation:
+        print(f"Running {args.test_split}-fold cross validation.")
+        for i in range(args.test_split):
+            error, results_table, confusion_matrix = run_key_recognition(args, verbose=False, test_split_index=i)
+        
+            if args.table:
+                print(tabulate(results_table, headers=["Song ID", "Label key", "Predicted key"]))
+                print(confusion_matrix)
+            
+            print("Overall error: %5.2f%%" % (error*100))
+    else:
+        error, results_table, confusion_matrix = run_key_recognition(args, verbose=args.verbose, test_split_index=i)
+        
+        if args.table:
+            print(tabulate(results_table, headers=["Song ID", "Label key", "Predicted key"]))
+            print(confusion_matrix)
+        
+        print("Overall error: %5.2f%%" % (error*100))
+        
+        if args.csv is not False:
+            np.savetxt

@@ -35,21 +35,25 @@ class Naive_model:
         for i in range(0,24):
             teacher_vecs[i] = []
 
-        print("Applying training samples...")
+        if verbose:
+            print("Applying training samples...")
         for track_id in training_data_dict:
             track_data = training_data_dict[track_id]
             vec = self.format_sequence(track_data)
             teacher_vecs[track_data["mode"]*12 + track_data["key"]].append(vec)
-        print("Done.")
+        if verbose:
+            print("Done.")
         
-        print("Composing model...")
+        if verbose:
+            print("Composing model...")
         self.model = []
         for i in range(0,24):
             if len(teacher_vecs[i]) == 0:
                 self.model.append(-np.ones(12))
             else:
                 self.model.append( np.average(np.array(teacher_vecs[i]), axis=0) )
-        print("Done.")
+        if verbose:
+            print("Done.")
         self.model = np.array(self.model)
         
     
