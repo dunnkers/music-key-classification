@@ -35,7 +35,6 @@ def n_track_analyses_generator(track_ids):
     while True:
         if idx == len(track_ids):
             break
-        print(f'looking for track {idx} out of {len(track_ids)}')
         track_id = track_ids[idx]
         response = get(_get_track_analysis_url(track_id), headers=headers)
         if response.status_code == 429:
@@ -55,6 +54,7 @@ def n_track_analyses_generator(track_ids):
             yield result
         else:
             print(response)
+            print(response.json())
             raise Exception("Unexpected non-200 status code")
     total_time = time() - start_time
     print(f'fetched {len(track_ids)} track analysis objects in {total_time:.3f} seconds')
