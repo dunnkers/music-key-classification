@@ -6,7 +6,7 @@ import copy
 class HMM_model:
 
     model = None
-
+    
     def train(self, training_data_dict: dict):
         print("Formatting training data...")
         minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths = self.format_training_data(training_data_dict)
@@ -26,6 +26,8 @@ class HMM_model:
 
     
     def train_model(self, minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states, iterations):
+
+        # Train two base models for major and minor
         model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
         model_major = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
         # model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="diag", n_iter=iterations)
@@ -37,6 +39,8 @@ class HMM_model:
         model_major.fit(major_sequences, major_sequence_lengths)
         print("Trained major model. Converged: %s" % str(model_major.monitor_.converged))
         print("Done.")
+
+        # Transpose the base models to all other keys
         print("Copying models...")
         models = []
         for i in range(0, 12):
@@ -62,7 +66,7 @@ class HMM_model:
             
             # Format sequence
             seq = self.format_sequence(analysis)
-            seq = np.roll(seq, -analysis["key"])
+            seq = np.roll(seq, -analysis["key"]) # All sequences are transposed to the "base" key (C)
             
             # Add sequence to set of all sequences within mode
             if analysis["mode"] == 1:

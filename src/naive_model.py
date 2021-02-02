@@ -4,6 +4,7 @@ import copy
 
 class Naive_model:
 
+    # Hardcoded comparison vectors
     model = -np.ones((24,12))
     model[0,:]  = [1, 0,  1, 1,  0, 1, 0,  1, 1,  0, 1,  0]
     model[1,:]  = [0, 1,  0, 1,  1, 0, 1,  0, 1,  1, 0,  1]
