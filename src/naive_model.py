@@ -30,7 +30,7 @@ class Naive_model:
     model[22,:] = [1, 0,  1, 1,  0, 1, 0,  1, 0,  1, 1,  0]
     model[23,:] = [0, 1,  0, 1,  1, 0, 1,  0, 1,  0, 1,  1]
 
-    def train(self, training_data_dict: dict):
+    def train(self, training_data_dict: dict, verbose=False):
         teacher_vecs = {}
         for i in range(0,24):
             teacher_vecs[i] = []

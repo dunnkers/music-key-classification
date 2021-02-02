@@ -24,6 +24,9 @@ def get_args():
     arg_parser.add_argument('--table', action='store_true', help='''
         Whether or not to print a table of all the test samples and their classification
         ''')
+    arg_parser.add_argument('--verbose', action='store_true', help='''
+        Verbose model training
+        ''')
     sub_parsers = arg_parser.add_subparsers(dest='method')
     sub_parsers.required = True
 
@@ -39,6 +42,9 @@ def get_args():
     hmm_sub_parser = sub_parsers.add_parser('hmm', help='''
         Test classification using the HMM method.
     ''')
+    hmm_sub_parser.add_argument('--mixture', action='store_true', help='''
+        Use a Gaussian mixture model
+        ''')
     return arg_parser.parse_args()
 
 
@@ -74,6 +80,8 @@ def run_key_recognition(args):
     else:
         from hmm_model import HMM_model
         model = HMM_model()
+        if args.mixture:
+            model.mixture = True
         pass
     
     # Collect data
@@ -81,7 +89,7 @@ def run_key_recognition(args):
 
     # Train model
     if args.method != 'naive' or not args.no_training:
-        model.train(training_data)
+        model.train(training_data, verbose=args.verbose)
 
     
     results_table = []

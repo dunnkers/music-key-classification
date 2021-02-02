@@ -5,13 +5,14 @@ import copy
 
 class HMM_model:
 
-    model = None
+    model   = None
+    mixture = False
     
-    def train(self, training_data_dict: dict):
+    def train(self, training_data_dict: dict, verbose=False):
         print("Formatting training data...")
         minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths = self.format_training_data(training_data_dict)
         print("Done.")
-        self.model = self.train_model(minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states=3, iterations=100)
+        self.model = self.train_model(minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states=3, iterations=100, verbose=verbose)
         return
     
     def predict(self, test_sample: dict, mode=False):
@@ -25,13 +26,16 @@ class HMM_model:
         return estimate
 
     
-    def train_model(self, minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states, iterations):
+    def train_model(self, minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states, iterations, verbose=False):
 
         # Train two base models for major and minor
-        model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
-        model_major = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations)
-        # model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="diag", n_iter=iterations)
-        # model_major = hmm.GaussianHMM(n_components=hidden_states, covariance_type="diag", n_iter=iterations)
+        if self.mixture:
+            model_minor = hmm.GMMHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations, n_mix=10, verbose=verbose)
+            model_major = hmm.GMMHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations, n_mix=10, verbose=verbose)
+        else:
+            model_minor = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations, verbose=verbose)
+            model_major = hmm.GaussianHMM(n_components=hidden_states, covariance_type="full", n_iter=iterations, verbose=verbose)
+        
         print("Training minor model...")
         model_minor.fit(minor_sequences, minor_sequence_lengths)
         print("Trained minor model. Converged: %s" % str(model_minor.monitor_.converged))
@@ -45,13 +49,21 @@ class HMM_model:
         models = []
         for i in range(0, 12):
             key_model = copy.deepcopy(model_minor)
-            key_model.means_ = np.roll(key_model.means_, i, axis=1)
-            key_model.covars_ = np.roll(np.roll(key_model.covars_, i, axis=1), i, axis=2)
+            if self.mixture:
+                key_model.means_ = np.roll(key_model.means_, i, axis=2)
+                key_model.covars_ = np.roll(np.roll(key_model.covars_, i, axis=2), i, axis=3)
+            else:
+                key_model.means_ = np.roll(key_model.means_, i, axis=1)
+                key_model.covars_ = np.roll(np.roll(key_model.covars_, i, axis=1), i, axis=2)
             models.append(key_model)
         for i in range(0, 12):
             key_model = copy.deepcopy(model_major)
-            key_model.means_ = np.roll(key_model.means_, i, axis=1)
-            key_model.covars_ = np.roll(np.roll(key_model.covars_, i, axis=1), i, axis=2)
+            if self.mixture:
+                key_model.means_ = np.roll(key_model.means_, i, axis=2)
+                key_model.covars_ = np.roll(np.roll(key_model.covars_, i, axis=2), i, axis=3)
+            else:
+                key_model.means_ = np.roll(key_model.means_, i, axis=1)
+                key_model.covars_ = np.roll(np.roll(key_model.covars_, i, axis=1), i, axis=2)
             models.append(key_model)
         print("Done")
         return models
