@@ -6,9 +6,7 @@ from json import load
 def track_id_generator(mpl_data_path, have_id=None):
     files = listdir(mpl_data_path)
     for file in files:
-        # with open(join(mpl_data_path, file), 'r') as f:
         with open(join(mpl_data_path, file), 'r', encoding='utf-8') as f:
-            print(f)
             mpl_slice = load(f)
             for playlist in mpl_slice['playlists']:
                 for track in playlist['tracks']:

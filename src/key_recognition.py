@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from tracklist import TrackList as Meta
+from tracklist import TrackList
 from data import load_analysis
 import numpy as np
 from tabulate import tabulate
@@ -50,8 +50,8 @@ def load_data_dict(data_dir, track_ids):
     return testing_data
 
 def collect_data(data_dir, test_split):
-    meta = Meta.load_from_dir(data_dir)
-    all_tracks = meta.get_track_ids()
+    track_list = TrackList.load_from_dir(data_dir)
+    all_tracks = track_list.get_track_ids()
     n = len(all_tracks)
     train_n = int(n*(1-test_split))
     print("Collecting training data...")
