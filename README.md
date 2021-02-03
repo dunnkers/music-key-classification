@@ -117,3 +117,19 @@ Overall accuracy: 71.52%
 
 Note that tracks that are in minor key are ignored for now, so N is lower than 250.
 
+## Peregrine
+First, upload the dataset. Do this using:
+```shell
+rsync -aP $PEREGRINE_USERNAME@peregrine.hpc.rug.nl:~/Key-Recognition/logs ./logs
+```
+
+Login to Peregrine and submit a job using:
+
+```shell
+sbatch src/peregrine.sh
+```
+
+Finally, download the log files using:
+```shell
+rsync -aP $PEREGRINE_USERNAME@peregrine.hpc.rug.nl:~/Key-Recognition/logs ./logs
+```
