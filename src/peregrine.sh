@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=00:30:00
+#SBATCH --time=03:00:00
 #SBATCH --mem=8000
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --partition=short
+#SBATCH --partition=regular
 #SBATCH --job-name=key-recognition
 #SBATCH --output=logs/slurm-%j.out
 # → do make sure /logs directory exists!
