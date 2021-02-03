@@ -146,7 +146,7 @@ if __name__ == '__main__':
             
             print("Overall error: %5.2f%%" % (error*100))
     else:
-        error, results_table, confusion_matrix = run_key_recognition(args, verbose=args.verbose, test_split_index=i)
+        error, results_table, confusion_matrix = run_key_recognition(args, verbose=args.verbose)
         
         if args.table:
             print(tabulate(results_table, headers=["Song ID", "Label key", "Predicted key"]))
