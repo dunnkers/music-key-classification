@@ -1,5 +1,4 @@
 import numpy as np
-from hmmlearn import hmm
 import copy
 
 class Naive_model:
@@ -31,26 +30,30 @@ class Naive_model:
     model[22,:] = [1, 0,  1, 1,  0, 1, 0,  1, 0,  1, 1,  0]
     model[23,:] = [0, 1,  0, 1,  1, 0, 1,  0, 1,  0, 1,  1]
 
-    def train(self, training_data_dict: dict):
+    def train(self, training_data_dict: dict, verbose=False):
         teacher_vecs = {}
         for i in range(0,24):
             teacher_vecs[i] = []
 
-        print("Applying training samples...")
+        if verbose:
+            print("Applying training samples...")
         for track_id in training_data_dict:
             track_data = training_data_dict[track_id]
             vec = self.format_sequence(track_data)
             teacher_vecs[track_data["mode"]*12 + track_data["key"]].append(vec)
-        print("Done.")
+        if verbose:
+            print("Done.")
         
-        print("Composing model...")
+        if verbose:
+            print("Composing model...")
         self.model = []
         for i in range(0,24):
             if len(teacher_vecs[i]) == 0:
                 self.model.append(-np.ones(12))
             else:
                 self.model.append( np.average(np.array(teacher_vecs[i]), axis=0) )
-        print("Done.")
+        if verbose:
+            print("Done.")
         self.model = np.array(self.model)
         
     
@@ -71,13 +74,11 @@ class Naive_model:
     
     def format_sequence(self, audio_analysis):
         # Reformat data
-        num_segments = len(audio_analysis["segments"])
+        num_segments = len(audio_analysis["pitches"])
         input_data = np.zeros((num_segments, 13))
-        i = 0
-        for segment in audio_analysis["segments"]:
-            input_data[i,0]  = segment["duration"]
-            input_data[i,1:] = segment["pitches"]
-            i += 1
+        for i in range(num_segments):
+            input_data[i,0]  = audio_analysis["duration"][i]
+            input_data[i,1:] = audio_analysis["pitches"][i]
         
         # Return weighted average chroma key vector
         avg_vec = np.average(input_data[:,1:], axis=0, weights=input_data[:,0])
