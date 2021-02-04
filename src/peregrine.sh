@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --time=03:00:00
 #SBATCH --mem=16000
+#SBATCH --nodes=1
 #SBATCH --ntasks=10
 #SBATCH --partition=regular
 #SBATCH --job-name=key-recognition
