@@ -155,4 +155,4 @@ if __name__ == '__main__':
         print("Overall error: %5.2f%%" % (error*100))
         
         if args.csv is not False:
-            np.savetxt
+            np.savetxt(args.csv, confusion_matrix)
