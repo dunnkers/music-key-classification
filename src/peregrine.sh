@@ -5,7 +5,7 @@
 #SBATCH --ntasks=10
 #SBATCH --partition=regular
 #SBATCH --job-name=key-recognition
-#SBATCH --output=logs/slurm-%j.out
+#SBATCH --output=logs/slurm-%A_%a.out
 #SBATCH --array=1,3,5,8,12,15
 # → do make sure /logs directory exists!
 
