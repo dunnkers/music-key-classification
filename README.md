@@ -139,6 +139,6 @@ Finally we can visualize the results using a Notebook. First, however, post-proc
 ```shell
 sh src/peregrine_postprocess.sh $JOB_ID
 ```
-...where `$JOB_ID` is the Peregrine job id you ran the analysis on.
+...where `$JOB_ID` is the Peregrine job id you ran the analysis on. Run multiple times when data spread out over multiple jobs.
 
-Then, open up `src/peregrine_results.ipynb` and adjust the .csv filename to match. The results can now be visualized. ✨
+Then, open up `src/peregrine_results.ipynb` and adjust the .csv filename(s) to match. The results can now be visualized. ✨
