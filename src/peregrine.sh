@@ -11,5 +11,5 @@
 
 module load Python/3.8.2-GCCcore-9.3.0
 pip3 install -r requirements.txt --user
-python3 src/peregrine --n_components ${SLURM_ARRAY_TASK_ID}
+python3 src/peregrine.py --n_components ${SLURM_ARRAY_TASK_ID}
 
