@@ -10,5 +10,5 @@
 
 module load Python/3.8.2-GCCcore-9.3.0
 pip3 install -r requirements.txt --user
-python3 src/key_recognition.py --verbose --give-mode hmm
+python3 src/key_recognition.py --verbose --table --give-mode hmm
 
