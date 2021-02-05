@@ -30,6 +30,15 @@ def get_args():
     arg_parser.add_argument('--cross-validation', action='store_true', help='''
         Run N-fold cross-validation (N = <--test-split>)
         ''')
+    arg_parser.add_argument('--dry', action='store_true', help='''
+        Dry run: only test program execution - use only a couple training samples in total.
+        ''')
+    arg_parser.add_argument('--n_components', default=3, type=int, help='''
+        Amount of components ('hidden states') to use for HMM training.
+        ''')
+    arg_parser.add_argument('--n_iter', default=100, type=int, help='''
+        (Maximum) amount of iterations used in HMM training.
+        ''')
     sub_parsers = arg_parser.add_subparsers(dest='method')
     sub_parsers.required = True
 
@@ -58,10 +67,12 @@ def load_data_dict(data_dir, track_ids):
         testing_data[track_id] = analysis
     return testing_data
 
-def collect_data(data_dir, test_split, test_split_index=0 , verbose=False):
+def collect_data(data_dir, test_split, test_split_index=0 , verbose=False, dry=False):
     track_list = TrackList.load_from_dir(data_dir)
     all_tracks = track_list.get_track_ids()
     n = len(all_tracks)
+    if dry: # use virtually no data at all - just test the program execution
+        n = test_split
     chunks = np.array_split(np.arange(n), test_split)
     test_split =  chunks[test_split_index]
     train_split = np.concatenate(chunks[:test_split_index] + chunks[test_split_index+1:])
@@ -87,13 +98,13 @@ def run_key_recognition(args, verbose=True, test_split_index=0):
         pass
     else:
         from hmm_model import HMM_model
-        model = HMM_model()
+        model = HMM_model(n_components=args.n_components, n_iter=args.n_iter)
         if args.mixture:
             model.mixture = True
         pass
     
     # Collect data
-    training_data, testing_data = collect_data(args.data_dir, args.test_split, test_split_index=test_split_index, verbose=verbose)
+    training_data, testing_data = collect_data(args.data_dir, args.test_split, test_split_index=test_split_index, verbose=verbose, dry=args.dry)
 
     # Train model
     if args.method != 'naive' or not args.no_training:
@@ -145,6 +156,10 @@ if __name__ == '__main__':
                 print(confusion_matrix)
             
             print("Overall error: %5.2f%%" % (error*100))
+        
+            if args.csv is not False:
+                np.savetxt('split_{}-{}'.format(i, args.csv), confusion_matrix)
+
     else:
         error, results_table, confusion_matrix = run_key_recognition(args, verbose=args.verbose)
         
@@ -155,4 +170,4 @@ if __name__ == '__main__':
         print("Overall error: %5.2f%%" % (error*100))
         
         if args.csv is not False:
-            np.savetxt
+            np.savetxt(args.csv, confusion_matrix)

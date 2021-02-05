@@ -117,3 +117,28 @@ Overall accuracy: 71.52%
 
 Note that tracks that are in minor key are ignored for now, so N is lower than 250.
 
+## Peregrine
+First, upload the dataset. Do this using:
+```shell
+rsync -aP $PEREGRINE_USERNAME@peregrine.hpc.rug.nl:~/Key-Recognition/logs ./logs
+```
+... where `$PEREGRINE_USERNAME` is set as your Peregrine login name, e.g. your P- or S- number.
+
+Login to Peregrine and submit a job using:
+
+```shell
+sbatch src/peregrine.sh
+```
+
+Download the log files using:
+```shell
+rsync -aP $PEREGRINE_USERNAME@peregrine.hpc.rug.nl:~/Key-Recognition/logs ./logs
+```
+
+Finally we can visualize the results using a Notebook. First, however, post-process the results, using:
+```shell
+sh src/peregrine_postprocess.sh $JOB_ID
+```
+...where `$JOB_ID` is the Peregrine job id you ran the analysis on. Run multiple times when data spread out over multiple jobs.
+
+Then, open up `src/peregrine_results.ipynb` and adjust the .csv filename(s) to match. The results can now be visualized. ✨

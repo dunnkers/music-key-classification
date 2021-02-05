@@ -7,6 +7,10 @@ class HMM_model:
 
     model   = None
     mixture = False
+
+    def __init__(self, n_components=3, n_iter=100):
+        self.n_components = n_components
+        self.n_iter = n_iter
     
     def train(self, training_data_dict: dict, verbose=False):
         if verbose:
@@ -14,7 +18,7 @@ class HMM_model:
         minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths = self.format_training_data(training_data_dict)
         if verbose:
             print("Done.")
-        self.model = self.train_model(minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states=3, iterations=100, verbose=verbose)
+        self.model = self.train_model(minor_sequences, minor_sequence_lengths, major_sequences, major_sequence_lengths, hidden_states=self.n_components, iterations=self.n_iter, verbose=verbose)
         return
     
     def predict(self, test_sample: dict, mode=False):

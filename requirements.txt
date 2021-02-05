@@ -1,6 +1,5 @@
 appnope==0.1.2
 backcall==0.2.0
-celluloid==0.2.0
 certifi==2020.12.5
 chardet==3.0.4
 colorama==0.4.4
