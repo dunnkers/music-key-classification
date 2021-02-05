@@ -1,11 +1,12 @@
 #!/bin/bash
-echo "fold,n_components,error" > results/errors-$1.csv
-echo "n_components,walltime" > results/walltime-$1.csv
+echo "fold,n_components,error,walltime,cputime" > results/$1.csv
 for filename in logs/slurm-$1*; do
-    echo $filename
+    echo "$filename (n_components = $n_components)"
     n_components=$(echo $filename | sed "s/logs\/slurm-$1_//" | sed "s/.out//")
-    echo $n_components
 
+    # CPU- and walltime
+    walltime=$(grep $filename -e 'Used walltime       :' | cut -d":" -f 2- | awk '{$1=$1};1')
+    cputime=$(grep $filename -e 'Used CPU time       :' | cut -d":" -f 2- | awk '{$1=$1};1' | cut -d" " -f1)
     # Store error % per fold
     fold=1
     errors=$(cat $filename\
@@ -14,10 +15,6 @@ for filename in logs/slurm-$1*; do
      | sed "s/%//")
     echo $errors
     for error in $errors; do
-        echo "$fold,$n_components,$error" >> results/errors-$1.csv
+        echo "$fold,$n_components,$error,$walltime,$cputime" >> results/$1.csv
     done
-
-    # Store walltime
-    walltime=$(grep $filename -e 'Used walltime       :' | cut -d":" -f 2- | awk '{$1=$1};1')
-    echo "$n_components,$walltime" >> results/walltime-$1.csv
 done
