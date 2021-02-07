@@ -6,3 +6,5 @@ sh src/peregrine_postprocess.sh 17827870
 sh src/peregrine_postprocess.sh 17838246
 sh src/peregrine_postprocess.sh 17838254
 sh src/peregrine_postprocess.sh 17846863
+sh src/peregrine_postprocess.sh 17873402
+sh src/peregrine_postprocess.sh 17873366
