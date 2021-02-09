@@ -16,6 +16,6 @@ for filename in logs/slurm-$1*; do
     echo $errors
     for error in $errors; do
         echo "$fold,$hyperparam,$error,$walltime,$cputime" >> results/$1.csv
-        ((fold+=1))
+        fold=$((fold+1))
     done
 done
