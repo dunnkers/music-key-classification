@@ -13,6 +13,9 @@ if __name__ == '__main__':
     arg_parser.add_argument('--n_iter', default=100, type=int, help='''
         (Maximum) amount of iterations used in HMM training.
         ''')
+    arg_parser.add_argument('--subset', default=1000, type=int, help='''
+        Samples to use.
+        ''')
     hyperargs = arg_parser.parse_args()
 
     # Get args - manually create Namespace object
@@ -28,6 +31,7 @@ if __name__ == '__main__':
     args.test_split = 10
     args.n_components = hyperargs.n_components
     args.n_iter = hyperargs.n_iter
+    args.subset = hyperargs.subset
     args.csv = True
 
     # Function to run on 1 fold
