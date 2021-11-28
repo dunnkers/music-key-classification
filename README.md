@@ -1,6 +1,10 @@
 # Machine Learning Project: Musical key recognition using a Hidden Markov Model (HMM)
 This is the repo for managing the code of the machine learning pipeline for our group project.
 
+![Screen Shot 2021-11-28 at 21 36 57](https://user-images.githubusercontent.com/744430/143785049-c04c62b0-ca32-425e-a395-b98bc97af410.png)
+
+Check out the [full report](https://github.com/dunnkers/music-key-classification/blob/main/Report.pdf) or the exploratory [Jupyter Notebook](https://dunnkers.com/music-key-classification).
+
 ## Installation
 Assuming you use Python 3.8, Virtualenv 20.2.1 and 
 
