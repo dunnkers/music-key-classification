@@ -142,3 +142,12 @@ sh src/peregrine_postprocess.sh $JOB_ID
 ...where `$JOB_ID` is the Peregrine job id you ran the analysis on. Run multiple times when data spread out over multiple jobs.
 
 Then, open up `src/peregrine_results.ipynb` and adjust the .csv filename(s) to match. The results can now be visualized. ✨
+
+## About
+Project conducted as part of the Machine Learning course (WMAI010-05) at the University of Groningen.
+
+Authors:
+- Jordan Barkai
+- Pieter Dekker
+- Thijs Havinga
+- [Jeroen Overschie](https://dunnkers.com/)
